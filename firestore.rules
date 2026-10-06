@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isActiveUser() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        getUserData().status == 'active';
+    }
+
+    function isAdmin() {
+      return isActiveUser() && getUserData().role == 'admin';
+    }
+
+    // USERS COLLECTION
+    // Users can read all roommate profiles to see names/roles/contributions.
+    // Only admins or the user themselves (with strict field validation) can update.
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      
+      // Allow initial registration or admin provisioning
+      allow create: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      
+      // Updates: Users can modify their displayName or avatar, not their role or status.
+      // Admins can update roles or approve statuses.
+      allow update: if isAuthenticated() && (
+        (request.auth.uid == userId && 
+         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status', 'uid', 'username'])) ||
+        isAdmin()
+      );
+      
+      allow delete: if isAdmin();
+    }
+
+    // FLAT SETTINGS & GLOBAL PROFILES COLLECTION
+    // Stores synchronized roommate custom display names across all mobile and desktop devices.
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // EXPENSES COLLECTION
+    // Active roommates can view, add, and manage household items.
+    match /expenses/{expenseId} {
+      allow read: if isActiveUser();
+      
+      // Creation: must be active user, creator must match authenticated user
+      allow create: if isActiveUser() && 
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.amount is number &&
+        request.resource.data.amount > 0 &&
+        request.resource.data.title is string &&
+        request.resource.data.category is string;
+
+      // Updating / Deleting: Allowed if created by this user or if admin
+      allow update, delete: if isActiveUser() && (
+        resource.data.createdBy == request.auth.uid || isAdmin()
+      );
+    }
+
+    // WATER PAYMENTS COLLECTION
+    // Active roommates can record and monitor water payments.
+    match /waterPayments/{paymentId} {
+      allow read: if isActiveUser();
+
+      allow create: if isActiveUser() && 
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.amount is number &&
+        request.resource.data.amount > 0;
+
+      allow update, delete: if isActiveUser() && (
+        resource.data.createdBy == request.auth.uid || isAdmin()
+      );
+    }
+
+    // ROOMMATE REQUESTS COLLECTION
+    // Anyone authenticated or unauthenticated can submit an onboarding request.
+    // Only active roommates/admins can view and change approval statuses.
+    match /requests/{requestId} {
+      allow create: if true; // Public onboarding request submission
+      allow read: if isActiveUser();
+      allow update, delete: if isActiveUser() && (
+        isAdmin() || resource.data.createdBy == request.auth.uid
+      );
+    }
+  }
+}

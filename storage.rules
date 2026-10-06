@@ -1,0 +1,36 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Validate that uploaded file is an image and under 5 Megabytes
+    function isValidImage() {
+      return request.resource.contentType.matches('image/(jpeg|jpg|png|webp)')
+        && request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Payment proof uploads for expenses and water bills
+    match /proofs/{userId}/{fileName} {
+      // Authenticated users can view screenshots
+      allow read: if isAuthenticated();
+
+      // Users can only upload proofs under their own user ID folder
+      allow write: if isAuthenticated() && 
+        request.auth.uid == userId && 
+        isValidImage();
+
+      // Deletion allowed by owner
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // General attachments
+    match /{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImage();
+    }
+  }
+}

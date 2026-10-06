@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Flatopia — Autonomous Roommate Management Hub</title>
+  
+  <!-- SEO & Social Meta -->
+  <meta name="description" content="Next-gen shared apartment command center. Real-time expenses, immutable notifications, water bills, and contributions ledger.">
+  <meta name="theme-color" content="#f1f5f9">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <!-- Google Fonts: Space Grotesk (Futuristic headings) & Inter (Crystal clear UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Phosphor Icons (Sleek modern icon library) -->
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+
+  <!-- Core Stylesheet (Futuristic Advanced Light Theme) -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Ambient Animated Futuristic Light Background Glow Canvas -->
+  <div class="ambient-glow-wrapper" aria-hidden="true">
+    <div class="glow-orb orb-purple"></div>
+    <div class="glow-orb orb-cyan"></div>
+    <div class="glow-orb orb-pink"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- Toast Notification Center -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- ========================================================================= -->
+  <!-- AUTHENTICATION SCREEN -->
+  <!-- ========================================================================= -->
+  <section id="auth-screen" class="auth-screen">
+    <div class="auth-card glass-panel">
+      <!-- Glow border line -->
+      <div class="card-glow-edge"></div>
+
+      <div class="auth-header text-center">
+        <div class="logo-badge">
+          <img src="assets/logo.svg" alt="Flatopia Logo" class="brand-logo pulse-anim">
+        </div>
+        <h1 class="brand-title">FLATOPIA</h1>
+        <p class="brand-tagline">Autonomous Apartment Command Center</p>
+      </div>
+
+      <!-- Quick Switcher Tabs -->
+      <div class="auth-tabs">
+        <button id="tab-login-btn" class="auth-tab-btn active" data-target="login-form-wrap">
+          <i class="ph ph-sign-in"></i> Sign In
+        </button>
+        <button id="tab-request-btn" class="auth-tab-btn" data-target="request-form-wrap">
+          <i class="ph ph-user-plus"></i> Join Flat
+        </button>
+      </div>
+
+      <!-- Login Form View -->
+      <div id="login-form-wrap" class="auth-form-wrap active">
+        <form id="login-form" class="auth-form" autocomplete="on">
+          <div class="form-group">
+            <label for="login-username" class="form-label">
+              <i class="ph ph-user"></i> Flatopia Username
+            </label>
+            <div class="input-wrapper">
+              <input type="text" id="login-username" class="form-input" placeholder="e.g. ashish or roommate2" required autofocus>
+              <div class="input-glow"></div>
+            </div>
+            <span class="field-hint">Roommate account username (no email required)</span>
+          </div>
+
+          <div class="form-group">
+            <label for="login-password" class="form-label">
+              <i class="ph ph-lock-key"></i> Secret Password
+            </label>
+            <div class="input-wrapper">
+              <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+              <button type="button" class="btn-toggle-pwd" id="toggle-pwd-btn" aria-label="Toggle password visibility">
+                <i class="ph ph-eye"></i>
+              </button>
+              <div class="input-glow"></div>
+            </div>
+          </div>
+
+          <!-- Quick presets for 4 roommates in demo/first launch -->
+          <div class="quick-roommates-picker">
+            <span class="quick-title">Quick Select Profile:</span>
+            <div class="quick-chips" id="auth-quick-chips">
+              <button type="button" class="quick-chip" data-user="ashish">Ashish (Admin)</button>
+              <button type="button" class="quick-chip" data-user="roommate2">Roommate 2</button>
+              <button type="button" class="quick-chip" data-user="roommate3">Roommate 3</button>
+              <button type="button" class="quick-chip" data-user="roommate4">Roommate 4</button>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-login-submit" class="btn-primary w-full glow-btn">
+            <span class="btn-text">INITIALIZE ACCESS</span>
+            <i class="ph ph-arrow-right"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- Join Request Form View -->
+      <div id="request-form-wrap" class="auth-form-wrap">
+        <form id="request-form" class="auth-form">
+          <p class="request-desc" style="color:#64748b; font-size: 0.88rem; margin-bottom: 16px;">New to the flat? Submit an onboarding application for existing roommates to review and approve.</p>
+          
+          <div class="form-group">
+            <label for="req-display-name" class="form-label"><i class="ph ph-identification-card"></i> Your Full Name</label>
+            <div class="input-wrapper">
+              <input type="text" id="req-display-name" class="form-input" placeholder="e.g. Rohan Sharma" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="req-username" class="form-label"><i class="ph ph-user"></i> Desired Username</label>
+            <div class="input-wrapper">
+              <input type="text" id="req-username" class="form-input" placeholder="e.g. rohan" pattern="^[a-zA-Z0-9_]{3,20}$" title="3-20 characters, letters, numbers and underscores only" required>
+            </div>
+            <span class="field-hint">Alphanumeric username for your Flatopia ID</span>
+          </div>
+
+          <div class="form-group">
+            <label for="req-reason" class="form-label"><i class="ph ph-chat-teardrop-dots"></i> Reason / Move-in Notes</label>
+            <div class="input-wrapper">
+              <textarea id="req-reason" class="form-input form-textarea" placeholder="e.g. Moving into Room B starting Nov 1st" rows="3" required></textarea>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-request-submit" class="btn-primary w-full glow-btn">
+            <span class="btn-text">SEND ONBOARDING REQUEST</span>
+            <i class="ph ph-paper-plane-tilt"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- Demo mode indicator badge -->
+      <div id="demo-indicator" class="demo-badge">
+        <span class="pulse-dot"></span>
+        <span class="badge-text" id="system-mode-text">Autonomous Sandbox Mode Active</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN APPLICATION DASHBOARD (HIDDEN UNTIL AUTH) -->
+  <!-- ========================================================================= -->
+  <div id="app-shell" class="app-shell hidden">
+
+    <!-- Top Futuristic Light Header -->
+    <header class="app-header glass-panel">
+      <div class="header-inner">
+        <!-- Logo Brand -->
+        <div class="header-brand">
+          <img src="assets/logo.svg" alt="Flatopia" class="header-logo">
+          <div class="brand-text">
+            <span class="brand-name">FLATOPIA</span>
+            <span class="status-indicator-pill"><span class="pulse-dot"></span>LIVE SYNC</span>
+          </div>
+        </div>
+
+        <!-- Desktop Navigation Items -->
+        <nav class="desktop-nav" aria-label="Main Navigation">
+          <button class="nav-item active" data-view="overview">
+            <i class="ph ph-squares-four"></i>
+            <span>Overview</span>
+          </button>
+          <button class="nav-item" data-view="expenses">
+            <i class="ph ph-receipt"></i>
+            <span>Expenses</span>
+          </button>
+          <button class="nav-item" data-view="water">
+            <i class="ph ph-drop"></i>
+            <span>Water Bill</span>
+          </button>
+          <button class="nav-item" data-view="household">
+            <i class="ph ph-broom"></i>
+            <span>Household</span>
+          </button>
+          <button class="nav-item" data-view="requests">
+            <i class="ph ph-users"></i>
+            <span>Requests</span>
+            <span id="requests-badge" class="badge-count hidden">0</span>
+          </button>
+        </nav>
+
+        <!-- User Profile, Notification Icon & Action Bar -->
+        <div class="header-actions">
+          <!-- Quick Add Button -->
+          <button id="btn-quick-expense" class="btn-quick-add glow-btn">
+            <i class="ph ph-plus-circle-bold"></i>
+            <span class="desktop-only">Add Expense</span>
+          </button>
+
+          <!-- 🔔 NOTIFICATION ICON WITH UNREAD BADGE -->
+          <button class="header-notif-btn" id="header-notif-trigger" aria-label="View Roommate Notifications">
+            <i class="ph ph-bell"></i>
+            <span class="notif-badge-pill hidden" id="header-notif-badge">0</span>
+          </button>
+
+          <!-- Notification Dropdown Panel (Immutable Ledger) -->
+          <div class="notif-dropdown-panel hidden" id="notif-dropdown-panel">
+            <div class="notif-panel-header">
+              <div class="notif-panel-title">
+                <i class="ph ph-bell-ringing"></i>
+                <span>Flat Activity Feed</span>
+              </div>
+              <span class="notif-immutable-tag">Immutable Audit</span>
+            </div>
+            <div class="notif-list-container" id="notif-list-container">
+              <!-- Dynamically populated immutable notifications -->
+            </div>
+            <div class="notif-panel-footer">
+              <span>All additions & deletions permanently audited for all members.</span>
+            </div>
+          </div>
+
+          <!-- User Chip Card -->
+          <div class="user-chip-menu" id="user-chip-trigger">
+            <div class="user-avatar" id="header-user-avatar">A</div>
+            <div class="user-meta desktop-only">
+              <span class="user-name" id="header-user-name">Ashish</span>
+              <span class="user-role-badge" id="header-user-role">Admin</span>
+            </div>
+            <i class="ph ph-caret-down desktop-only"></i>
+          </div>
+
+          <!-- User dropdown menu -->
+          <div class="user-dropdown glass-panel hidden" id="user-dropdown-panel">
+            <div class="dropdown-header">
+              <p class="dropdown-user-full" id="dropdown-user-name">Ashish</p>
+              <p class="dropdown-user-sub" id="dropdown-user-handle">@ashish</p>
+            </div>
+            <hr class="dropdown-divider">
+            <button class="dropdown-item" id="btn-open-edit-profile">
+              <i class="ph ph-user-gear"></i> Edit Profile Name
+            </button>
+            <button class="dropdown-item" id="btn-open-change-pwd">
+              <i class="ph ph-key"></i> Change Password
+            </button>
+            <button class="dropdown-item" id="btn-open-settings">
+              <i class="ph ph-sliders"></i> System Info & Settings
+            </button>
+            <button class="dropdown-item text-danger" id="btn-logout">
+              <i class="ph ph-sign-out"></i> Disconnect / Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="app-main-content">
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 1: OVERVIEW / DASHBOARD -->
+      <!-- ===================================================================== -->
+      <section id="view-overview" class="view-section active">
+        <!-- Personalized Futuristic Hero Greeting -->
+        <div class="hero-welcome glass-panel">
+          <div class="hero-text">
+            <div class="hero-subline">
+              <i class="ph ph-calendar-blank"></i>
+              <span id="current-date-display">Tuesday, 06 Oct 2026</span>
+              <span class="divider-dot">•</span>
+              <span class="live-clock" id="live-clock">23:35:00</span>
+            </div>
+            <h1 class="hero-greeting" id="hero-greeting-text">Good to see you, <span class="highlight-text">Ashish</span>.</h1>
+            <p class="hero-quote">Flat status: Synchronized. All household resources, audit trails and utility budgets in equilibrium.</p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn-glass" id="hero-water-btn">
+              <i class="ph ph-drop-bold"></i> Record Water
+            </button>
+            <button class="btn-primary" id="hero-expense-btn">
+              <i class="ph ph-plus-bold"></i> Add Expense
+            </button>
+          </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- ADVANCED DIGITAL OVERALL SPENT TELEMETRY METER -->
+        <!-- =============================================================== -->
+        <div class="spent-meter-container glass-panel">
+          <div class="spent-meter-header">
+            <div class="spent-meter-title-wrap">
+              <div class="meter-icon-pulse">
+                <i class="ph ph-gauge"></i>
+              </div>
+              <div>
+                <span class="meter-sub">Flatopia Telemetry Gauge</span>
+                <h3 class="meter-main-title">Overall Shared Spending Meter</h3>
+              </div>
+            </div>
+            <div class="meter-live-badge">
+              <span class="pulse-dot"></span> LIVE AUDIT ACTIVE
+            </div>
+          </div>
+
+          <div class="spent-meter-body">
+            <!-- Digital Counter Display -->
+            <div class="digital-odometer-box">
+              <span class="digital-currency-symbol">₹</span>
+              <span class="digital-display-amount" id="digital-total-amount">0000</span>
+              <span class="digital-decimal">.00</span>
+              <span class="digital-tag">INR TOTAL POOL</span>
+            </div>
+
+            <!-- Segmented Gauge Visualization -->
+            <div class="meter-bar-track">
+              <div class="meter-bar-fill-gradient" id="meter-fill-bar" style="width: 0%;">
+                <div class="meter-needle-head"></div>
+              </div>
+            </div>
+
+            <!-- Roommate Dynamic Spending Micro-Cards -->
+            <div class="roommate-spent-chips-grid" id="roommate-spent-chips">
+              <!-- Dynamically populated per roommate spent amount -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Key Telemetry Metric Cards -->
+        <div class="stats-grid">
+          <!-- Total This Month -->
+          <div class="stat-card glass-panel tilt-card">
+            <div class="stat-icon-wrap icon-purple">
+              <i class="ph ph-wallet"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total This Month</span>
+              <h2 class="stat-value" id="stat-total-month">₹0</h2>
+              <span class="stat-trend positive"><i class="ph ph-arrow-up-right"></i> Shared Split</span>
+            </div>
+          </div>
+
+          <!-- My Contribution -->
+          <div class="stat-card glass-panel tilt-card">
+            <div class="stat-icon-wrap icon-cyan">
+              <i class="ph ph-user-check"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">My Contribution</span>
+              <h2 class="stat-value" id="stat-my-share">₹0</h2>
+              <span class="stat-subtext" id="stat-my-percentage">0% of total spend</span>
+            </div>
+          </div>
+
+          <!-- Water Bill -->
+          <div class="stat-card glass-panel tilt-card">
+            <div class="stat-icon-wrap icon-blue">
+              <i class="ph ph-drop"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Water Bill Ledger</span>
+              <h2 class="stat-value" id="stat-water-total">₹0</h2>
+              <span class="stat-subtext" id="stat-water-count">0 recorded cycles</span>
+            </div>
+          </div>
+
+          <!-- Total Records -->
+          <div class="stat-card glass-panel tilt-card">
+            <div class="stat-icon-wrap icon-pink">
+              <i class="ph ph-file-text"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Household Records</span>
+              <h2 class="stat-value" id="stat-total-records">0</h2>
+              <span class="stat-subtext">Expenses & Utility entries</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Roommate Breakdown & Realtime Activity Grid -->
+        <div class="dashboard-split-grid">
+          <!-- Left: Roommate Contributions Progress List (With Edit Name Option) -->
+          <div class="glass-panel dashboard-col">
+            <div class="panel-header">
+              <div class="header-left">
+                <i class="ph ph-chart-donut panel-icon"></i>
+                <h3 class="panel-title">Roommate Profiles & Contributions</h3>
+              </div>
+              <span class="status-chip">4 Active Members</span>
+            </div>
+            <div class="roommate-contributions-list" id="roommate-contributions-container">
+              <!-- Dynamically populated Roommate contribution bars with edit buttons -->
+            </div>
+          </div>
+
+          <!-- Right: Recent Real-Time Activity Feed -->
+          <div class="glass-panel dashboard-col">
+            <div class="panel-header">
+              <div class="header-left">
+                <i class="ph ph-broadcast panel-icon"></i>
+                <h3 class="panel-title">Recent Activity Feed</h3>
+              </div>
+              <button class="btn-text-action" id="btn-view-all-activity">View All</button>
+            </div>
+            <div class="activity-timeline" id="recent-activity-feed">
+              <!-- Dynamically populated chronological entries -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 2: EXPENSES / ITEMS -->
+      <!-- ===================================================================== -->
+      <section id="view-expenses" class="view-section">
+        <div class="section-top-bar">
+          <div>
+            <h2 class="section-title">Household Expenses & Items</h2>
+            <p class="section-subtitle">Real-time shared spending log with proof receipts</p>
+          </div>
+          <button class="btn-primary" id="btn-open-expense-modal">
+            <i class="ph ph-plus-bold"></i> Add New Expense
+          </button>
+        </div>
+
+        <!-- Filter & Search Controls Toolbar -->
+        <div class="filter-toolbar glass-panel">
+          <div class="search-box">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="expense-search-input" placeholder="Search by item, payer, or note..." class="filter-search-input">
+          </div>
+
+          <div class="category-filter-chips" id="expense-category-filters">
+            <button class="filter-chip active" data-filter="All">All Items</button>
+            <button class="filter-chip" data-filter="Household">Household</button>
+            <button class="filter-chip" data-filter="Groceries">Groceries</button>
+            <button class="filter-chip" data-filter="Bills">Bills</button>
+            <button class="filter-chip" data-filter="Garbage">Garbage</button>
+            <button class="filter-chip" data-filter="Repairs">Repairs</button>
+            <button class="filter-chip" data-filter="Other">Other</button>
+          </div>
+        </div>
+
+        <!-- Expenses Table / Card Grid -->
+        <div class="expenses-container" id="expenses-list-container">
+          <!-- Dynamically injected item cards -->
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 3: WATER BILL SECTION -->
+      <!-- ===================================================================== -->
+      <section id="view-water" class="view-section">
+        <div class="section-top-bar">
+          <div>
+            <h2 class="section-title">Water Bill Command</h2>
+            <p class="section-subtitle">Keep track of jar water, tanker supply, and monthly pipeline settlements</p>
+          </div>
+          <button class="btn-primary glow-cyan" id="btn-open-water-modal">
+            <i class="ph ph-drop-bold"></i> Record Water Payment
+          </button>
+        </div>
+
+        <!-- Water Metrics Overview Cards -->
+        <div class="water-stats-grid">
+          <div class="stat-card glass-panel">
+            <div class="stat-icon-wrap icon-blue">
+              <i class="ph ph-drop-half-bottom"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Water Payments</span>
+              <h3 class="stat-value" id="water-stat-total">₹0</h3>
+              <span class="stat-subtext">Aggregated Flat Pool</span>
+            </div>
+          </div>
+
+          <div class="stat-card glass-panel">
+            <div class="stat-icon-wrap icon-cyan">
+              <i class="ph ph-clock-counter-clockwise"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Latest Payment</span>
+              <h3 class="stat-value fs-medium" id="water-stat-latest">None yet</h3>
+              <span class="stat-subtext" id="water-stat-latest-date">—</span>
+            </div>
+          </div>
+
+          <div class="stat-card glass-panel">
+            <div class="stat-icon-wrap icon-purple">
+              <i class="ph ph-users-three"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Recorded Payments</span>
+              <h3 class="stat-value" id="water-stat-count">0</h3>
+              <span class="stat-subtext">All roommate transactions</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Water Ledger Grid -->
+        <div class="dashboard-split-grid mt-4">
+          <!-- Left: Water Ledger List -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <div class="header-left">
+                <i class="ph ph-list-dashes panel-icon"></i>
+                <h3 class="panel-title">Water Payment Ledger</h3>
+              </div>
+            </div>
+            <div class="water-ledger-container" id="water-ledger-list">
+              <!-- Dynamically populated water payment list -->
+            </div>
+          </div>
+
+          <!-- Right: Individual Roommate Water Contribution Breakdown -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <div class="header-left">
+                <i class="ph ph-chart-bar panel-icon"></i>
+                <h3 class="panel-title">Water Split by Roommate</h3>
+              </div>
+            </div>
+            <div class="water-contributions-list" id="water-roommates-container">
+              <!-- Dynamically populated roommate water progress -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 4: HOUSEHOLD SECTION -->
+      <!-- ===================================================================== -->
+      <section id="view-household" class="view-section">
+        <div class="section-top-bar">
+          <div>
+            <h2 class="section-title">Household & Utilities Division</h2>
+            <p class="section-subtitle">Dedicated operational hubs for regular home necessities</p>
+          </div>
+        </div>
+
+        <!-- 3 Dedicated Household Operation Hub Cards -->
+        <div class="household-categories-grid">
+          <!-- Garbage Cleaning Card -->
+          <div class="household-hero-card glass-panel">
+            <div class="card-corner-icon icon-pink">
+              <i class="ph ph-trash"></i>
+            </div>
+            <div class="card-body">
+              <h3 class="hub-title">Garbage Cleaning</h3>
+              <p class="hub-desc">Waste collector monthly fees, doorstep disposal, and society bin maintenance.</p>
+              <div class="hub-stats">
+                <span class="hub-amount" id="hub-garbage-total">₹0 spent</span>
+                <span class="hub-records" id="hub-garbage-count">0 records</span>
+              </div>
+              <button class="btn-glass mt-3 w-full btn-quick-cat" data-category="Garbage">
+                <i class="ph ph-plus-circle"></i> Log Garbage Expense
+              </button>
+            </div>
+          </div>
+
+          <!-- Home Supplies Card -->
+          <div class="household-hero-card glass-panel">
+            <div class="card-corner-icon icon-cyan">
+              <i class="ph ph-basket"></i>
+            </div>
+            <div class="card-body">
+              <h3 class="hub-title">Home Supplies</h3>
+              <p class="hub-desc">Soap, paste, shampoo, dishwashing bars, wipers, floor cleaners, and toiletries.</p>
+              <div class="hub-stats">
+                <span class="hub-amount" id="hub-supplies-total">₹0 spent</span>
+                <span class="hub-records" id="hub-supplies-count">0 records</span>
+              </div>
+              <button class="btn-glass mt-3 w-full btn-quick-cat" data-category="Household">
+                <i class="ph ph-plus-circle"></i> Log Supply Expense
+              </button>
+            </div>
+          </div>
+
+          <!-- Other Bills Card -->
+          <div class="household-hero-card glass-panel">
+            <div class="card-corner-icon icon-purple">
+              <i class="ph ph-lightning"></i>
+            </div>
+            <div class="card-body">
+              <h3 class="hub-title">Utilities & Other Bills</h3>
+              <p class="hub-desc">Electricity, high-speed Wi-Fi internet, plumber repairs, gas cylinder, and AC servicing.</p>
+              <div class="hub-stats">
+                <span class="hub-amount" id="hub-bills-total">₹0 spent</span>
+                <span class="hub-records" id="hub-bills-count">0 records</span>
+              </div>
+              <button class="btn-glass mt-3 w-full btn-quick-cat" data-category="Bills">
+                <i class="ph ph-plus-circle"></i> Log Utility Bill
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Household Items Deep Dive Filtered Feed -->
+        <div class="glass-panel mt-4">
+          <div class="panel-header">
+            <div class="header-left">
+              <i class="ph ph-clock-counter-clockwise panel-icon"></i>
+              <h3 class="panel-title">Recent Household & Utility Items</h3>
+            </div>
+          </div>
+          <div class="household-items-list" id="household-items-feed">
+            <!-- Dynamically populated items matching Household, Garbage, Bills -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 5: ROOMMATE REQUESTS (ONBOARDING) -->
+      <!-- ===================================================================== -->
+      <section id="view-requests" class="view-section">
+        <div class="section-top-bar">
+          <div>
+            <h2 class="section-title">Roommate Onboarding Requests</h2>
+            <p class="section-subtitle">Manage accession requests for new roommates joining Flatopia</p>
+          </div>
+          <button class="btn-glass" id="btn-open-request-modal">
+            <i class="ph ph-user-plus"></i> Submit Onboarding Request
+          </button>
+        </div>
+
+        <div class="glass-panel">
+          <div class="panel-header">
+            <div class="header-left">
+              <i class="ph ph-shield-check panel-icon"></i>
+              <h3 class="panel-title">Active Applications</h3>
+            </div>
+          </div>
+          <div class="requests-grid" id="requests-list-container">
+            <!-- Dynamically populated request cards -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Mobile Fixed Futuristic Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav glass-panel" aria-label="Mobile Navigation">
+      <button class="mobile-nav-item active" data-view="overview">
+        <i class="ph ph-squares-four"></i>
+        <span>Home</span>
+      </button>
+      <button class="mobile-nav-item" data-view="expenses">
+        <i class="ph ph-receipt"></i>
+        <span>Expenses</span>
+      </button>
+      <button class="mobile-nav-fab glow-btn" id="mobile-quick-add">
+        <i class="ph ph-plus"></i>
+      </button>
+      <button class="mobile-nav-item" data-view="water">
+        <i class="ph ph-drop"></i>
+        <span>Water</span>
+      </button>
+      <button class="mobile-nav-item" data-view="household">
+        <i class="ph ph-broom"></i>
+        <span>House</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: EDIT ROOMMATE NAME (ANY PROFILE) -->
+  <!-- ========================================================================= -->
+  <div class="modal-overlay hidden" id="modal-edit-profile" role="dialog" aria-modal="true" aria-labelledby="modal-edit-profile-title">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <div class="header-left">
+          <div class="modal-icon-badge icon-purple">
+            <i class="ph ph-user-gear"></i>
+          </div>
+          <div>
+            <h3 class="modal-title" id="modal-edit-profile-title">Edit Profile Name</h3>
+            <p class="modal-subtitle">Update display name across all roommates and flat records</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-close-modal="modal-edit-profile" aria-label="Close dialog">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+
+      <form id="form-edit-profile" class="modal-form">
+        <input type="hidden" id="edit-profile-username" value="">
+        
+        <div class="form-group">
+          <label for="edit-profile-select-user" class="form-label">Select Roommate Profile to Edit</label>
+          <select id="edit-profile-select-user" class="form-input form-select">
+            <!-- Dynamically populated with all 4 roommates -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-profile-display-name" class="form-label">New Display Name *</label>
+          <input type="text" id="edit-profile-display-name" class="form-input" placeholder="e.g. Ashish Kumar" required>
+          <span class="field-hint">This name will appear on all past and future expenses, water bills, and contribution bars.</span>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-glass" data-close-modal="modal-edit-profile">Cancel</button>
+          <button type="submit" class="btn-primary glow-btn">
+            <i class="ph ph-check-bold"></i> Save Name Change
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CHANGE PASSWORD (FOR CURRENT LOGGED-IN ROOMMATE) -->
+  <!-- ========================================================================= -->
+  <div class="modal-overlay hidden" id="modal-change-pwd" role="dialog" aria-modal="true" aria-labelledby="modal-change-pwd-title">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <div class="header-left">
+          <div class="modal-icon-badge icon-cyan">
+            <i class="ph ph-key"></i>
+          </div>
+          <div>
+            <h3 class="modal-title" id="modal-change-pwd-title">Change Login Password</h3>
+            <p class="modal-subtitle">Update your personal Flatopia access credentials</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-close-modal="modal-change-pwd" aria-label="Close dialog">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+
+      <form id="form-change-pwd" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Active Profile</label>
+          <div class="settings-row" style="padding: 10px 14px; background: #f8fafc; border-radius: 8px;">
+            <span style="font-weight: 600; color: #0f172a;" id="change-pwd-profile-name">Ashish</span>
+            <span class="status-chip" id="change-pwd-profile-handle" style="font-size: 0.75rem;">@ashish</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="input-current-pwd" class="form-label">Current Password *</label>
+          <div class="input-wrapper">
+            <input type="password" id="input-current-pwd" class="form-input" placeholder="••••••••" required>
+            <button type="button" class="btn-toggle-pwd" id="toggle-current-pwd-btn" aria-label="Toggle password visibility">
+              <i class="ph ph-eye"></i>
+            </button>
+          </div>
+          <span class="field-hint">Enter your existing secret password</span>
+        </div>
+
+        <div class="form-group">
+          <label for="input-new-pwd" class="form-label">New Password *</label>
+          <div class="input-wrapper">
+            <input type="password" id="input-new-pwd" class="form-input" placeholder="••••••••" minlength="6" required>
+            <button type="button" class="btn-toggle-pwd" id="toggle-new-pwd-btn" aria-label="Toggle password visibility">
+              <i class="ph ph-eye"></i>
+            </button>
+          </div>
+          <span class="field-hint">Must be at least 6 characters long</span>
+        </div>
+
+        <div class="form-group">
+          <label for="input-confirm-pwd" class="form-label">Confirm New Password *</label>
+          <div class="input-wrapper">
+            <input type="password" id="input-confirm-pwd" class="form-input" placeholder="••••••••" minlength="6" required>
+            <button type="button" class="btn-toggle-pwd" id="toggle-confirm-pwd-btn" aria-label="Toggle password visibility">
+              <i class="ph ph-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-glass" data-close-modal="modal-change-pwd">Cancel</button>
+          <button type="submit" class="btn-primary glow-cyan">
+            <i class="ph ph-lock-key"></i> Update Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ADD / EDIT EXPENSE -->
+  <!-- ========================================================================= -->
+  <div class="modal-overlay hidden" id="modal-expense" role="dialog" aria-modal="true" aria-labelledby="modal-expense-title">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <div class="header-left">
+          <div class="modal-icon-badge icon-purple">
+            <i class="ph ph-receipt"></i>
+          </div>
+          <div>
+            <h3 class="modal-title" id="modal-expense-title">Record New Expense</h3>
+            <p class="modal-subtitle">Log household spend with receipt validation</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-close-modal="modal-expense" aria-label="Close dialog">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+
+      <form id="form-expense" class="modal-form">
+        <!-- Item Title -->
+        <div class="form-group">
+          <label for="expense-title" class="form-label">Item / Title *</label>
+          <input type="text" id="expense-title" class="form-input" placeholder="e.g. Toothpaste, Dettol Soap, Wifi bill" required>
+        </div>
+
+        <!-- Category & Amount (2-Col Grid) -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="expense-category" class="form-label">Category *</label>
+            <select id="expense-category" class="form-input form-select" required>
+              <option value="Household">Household (Soap, Paste, etc)</option>
+              <option value="Groceries">Groceries & Cooking</option>
+              <option value="Bills">Bills & Utilities (WiFi, Power)</option>
+              <option value="Garbage">Garbage Cleaning</option>
+              <option value="Repairs">Repairs & Maintenance</option>
+              <option value="Other">Other Home Items</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="expense-amount" class="form-label">Amount (₹ INR) *</label>
+            <div class="input-currency-wrapper">
+              <span class="currency-symbol">₹</span>
+              <input type="number" id="expense-amount" class="form-input" placeholder="0" min="1" step="any" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date & Note (2-Col Grid) -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="expense-date" class="form-label">Payment Date *</label>
+            <input type="date" id="expense-date" class="form-input" required>
+          </div>
+
+          <div class="form-group">
+            <label for="expense-payer" class="form-label">Paid By *</label>
+            <select id="expense-payer" class="form-input form-select" required>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Optional Note -->
+        <div class="form-group">
+          <label for="expense-note" class="form-label">Optional Note</label>
+          <input type="text" id="expense-note" class="form-input" placeholder="e.g. Bought pack of 3 from local supermarket">
+        </div>
+
+        <!-- Payment Screenshot Upload -->
+        <div class="form-group">
+          <label class="form-label">Payment Screenshot (Optional)</label>
+          <div class="file-upload-zone" id="expense-drop-zone">
+            <input type="file" id="expense-file" class="file-hidden" accept="image/jpeg,image/png,image/webp,image/jpg">
+            <div class="upload-prompt" id="expense-upload-prompt">
+              <i class="ph ph-cloud-arrow-up upload-icon"></i>
+              <span class="upload-title">Click to upload or drag & drop</span>
+              <span class="upload-hint">JPG, PNG or WEBP (Max 5MB)</span>
+            </div>
+            <!-- Image preview container -->
+            <div class="upload-preview-wrap hidden" id="expense-preview-wrap">
+              <img src="" alt="Proof Preview" id="expense-preview-img" class="upload-preview-img">
+              <button type="button" class="btn-remove-preview" id="expense-btn-clear-img" title="Remove image">
+                <i class="ph ph-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-glass" data-close-modal="modal-expense">Cancel</button>
+          <button type="submit" id="btn-submit-expense" class="btn-primary glow-btn">
+            <i class="ph ph-check-bold"></i> Save Expense
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: RECORD WATER PAYMENT -->
+  <!-- ========================================================================= -->
+  <div class="modal-overlay hidden" id="modal-water" role="dialog" aria-modal="true" aria-labelledby="modal-water-title">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <div class="header-left">
+          <div class="modal-icon-badge icon-cyan">
+            <i class="ph ph-drop"></i>
+          </div>
+          <div>
+            <h3 class="modal-title" id="modal-water-title">Record Water Payment</h3>
+            <p class="modal-subtitle">Log tanker or drinking jar water distribution</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-close-modal="modal-water" aria-label="Close dialog">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+
+      <form id="form-water" class="modal-form">
+        <!-- Amount & Payer -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="water-amount" class="form-label">Amount (₹ INR) *</label>
+            <div class="input-currency-wrapper">
+              <span class="currency-symbol">₹</span>
+              <input type="number" id="water-amount" class="form-input" placeholder="250" min="1" step="any" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="water-payer" class="form-label">Paid By *</label>
+            <select id="water-payer" class="form-input form-select" required>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Date & Type -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="water-date" class="form-label">Payment Date *</label>
+            <input type="date" id="water-date" class="form-input" required>
+          </div>
+
+          <div class="form-group">
+            <label for="water-type" class="form-label">Water Type</label>
+            <select id="water-type" class="form-input form-select">
+              <option value="Drinking Water Jars">Drinking Water Jars (20L)</option>
+              <option value="Tanker Water">Water Tanker Supply</option>
+              <option value="Society Water Bill">Monthly Pipeline Bill</option>
+              <option value="Water Purifier Filter">Filter Maintenance / Service</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Note -->
+        <div class="form-group">
+          <label for="water-note" class="form-label">Optional Note</label>
+          <input type="text" id="water-note" class="form-input" placeholder="e.g. 5 jars delivered on Monday">
+        </div>
+
+        <!-- Water Receipt Screenshot Upload -->
+        <div class="form-group">
+          <label class="form-label">Payment Screenshot (Optional)</label>
+          <div class="file-upload-zone" id="water-drop-zone">
+            <input type="file" id="water-file" class="file-hidden" accept="image/jpeg,image/png,image/webp,image/jpg">
+            <div class="upload-prompt" id="water-upload-prompt">
+              <i class="ph ph-cloud-arrow-up upload-icon"></i>
+              <span class="upload-title">Click to upload UPI / Cash proof</span>
+              <span class="upload-hint">JPG, PNG or WEBP (Max 5MB)</span>
+            </div>
+            <div class="upload-preview-wrap hidden" id="water-preview-wrap">
+              <img src="" alt="Proof Preview" id="water-preview-img" class="upload-preview-img">
+              <button type="button" class="btn-remove-preview" id="water-btn-clear-img" title="Remove image">
+                <i class="ph ph-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-glass" data-close-modal="modal-water">Cancel</button>
+          <button type="submit" id="btn-submit-water" class="btn-primary glow-cyan">
+            <i class="ph ph-check-bold"></i> Record Water Payment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: SUBMIT ROOMMATE ONBOARDING REQUEST -->
+  <!-- ========================================================================= -->
+  <div class="modal-overlay hidden" id="modal-request" role="dialog" aria-modal="true" aria-labelledby="modal-request-title">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <div class="header-left">
+          <div class="modal-icon-badge icon-purple">
+            <i class="ph ph-user-plus"></i>
+          </div>
+          <div>
+            <h3 class="modal-title" id="modal-request-title">Request New Roommate</h3>
+            <p class="modal-subtitle">Submit details for roommate evaluation</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-close-modal="modal-request" aria-label="Close dialog">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+
+      <form id="form-roommate-request" class="modal-form">
+        <div class="form-group">
+          <label for="modal-req-name" class="form-label">Full Display Name *</label>
+          <input type="text" id="modal-req-name" class="form-input" placeholder="e.g. Vikramaditya Roy" required>
+        </div>
+
+        <div class="form-group">
+          <label for="modal-req-user" class="form-label">Desired Username *</label>
+          <input type="text" id="modal-req-user" class="form-input" placeholder="e.g. vikram" pattern="^[a-zA-Z0-9_]{3,20}$" required>
+          <span class="field-hint">Used for flat login ID</span>
+        </div>
+
+        <div class="form-group">
+          <label for="modal-req-reason" class="form-label">Reason / Room Allocation *</label>
+          <textarea id="modal-req-reason" class="form-input form-textarea" placeholder="e.g. Moving into master bedroom sharing with Roommate 2" rows="3" required></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-glass" data-close-modal="modal-request">Cancel</button>
+          <button type="submit" class="btn-primary glow-btn">
+            <i class="ph ph-paper-plane-tilt"></i> Submit Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- LIGHTBOX: FUTURISTIC IMAGE & RECEIPT VIEWER WITH ZOOM -->
+  <!-- ========================================================================= -->
+  <div class="lightbox-overlay hidden" id="lightbox-viewer" role="dialog" aria-modal="true" aria-label="Payment Screenshot Proof Viewer">
+    <div class="lightbox-container glass-panel">
+      <!-- Lightbox Header Controls -->
+      <div class="lightbox-header">
+        <div class="lightbox-meta">
+          <span class="lightbox-badge" id="lightbox-category">Household</span>
+          <h4 class="lightbox-title" id="lightbox-title">Receipt Proof</h4>
+          <span class="lightbox-sub" id="lightbox-sub-meta">₹0 • Paid by — • Date</span>
+        </div>
+        <div class="lightbox-actions">
+          <button class="lightbox-btn" id="lightbox-btn-zoom-in" title="Zoom In">
+            <i class="ph ph-magnifying-glass-plus"></i>
+          </button>
+          <button class="lightbox-btn" id="lightbox-btn-zoom-out" title="Zoom Out">
+            <i class="ph ph-magnifying-glass-minus"></i>
+          </button>
+          <button class="lightbox-btn" id="lightbox-btn-reset-zoom" title="Reset Zoom">
+            <i class="ph ph-arrows-out"></i>
+          </button>
+          <a href="#" download class="lightbox-btn" id="lightbox-btn-download" title="Download Image">
+            <i class="ph ph-download-simple"></i>
+          </a>
+          <button class="lightbox-btn lightbox-close" id="lightbox-btn-close" title="Close Viewer">
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Lightbox Image Stage -->
+      <div class="lightbox-stage" id="lightbox-stage">
+        <img src="" alt="Payment screenshot proof" id="lightbox-img" class="lightbox-img">
+      </div>
+
+      <!-- Lightbox Footer Info -->
+      <div class="lightbox-footer">
+        <div class="lightbox-note-box">
+          <span class="note-label">Transaction Note:</span>
+          <span class="note-content" id="lightbox-note">None</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings & Help Modal -->
+  <div class="modal-overlay hidden" id="modal-settings" role="dialog" aria-modal="true">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <div class="header-left">
+          <div class="modal-icon-badge icon-purple">
+            <i class="ph ph-gear"></i>
+          </div>
+          <div>
+            <h3 class="modal-title">System Settings & Status</h3>
+            <p class="modal-subtitle">Flatopia Deployment Telemetry</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-close-modal="modal-settings">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+      <div class="modal-body settings-body">
+        <div class="settings-row">
+          <span class="settings-label">Application Status</span>
+          <span class="badge-status-pill online">Production Ready</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Theme Engine</span>
+          <span class="settings-val">Advanced Luxury Light Interface</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Database Engine</span>
+          <span class="settings-val" id="settings-db-status">Firebase Firestore (Active)</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Cloud Image Store</span>
+          <span class="settings-val" id="settings-storage-status">Firebase Storage (Online)</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Audit & Notifications</span>
+          <span class="settings-val" style="color: var(--neon-green)">Immutable Multi-member Broadcast</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Current Session UID</span>
+          <span class="settings-val font-mono" id="settings-uid">—</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Currency Standard</span>
+          <span class="settings-val">₹ INR (Indian Rupee)</span>
+        </div>
+        <div class="settings-note">
+          <i class="ph ph-info"></i>
+          <span>To link your live Firebase cloud, configure <code>firebase-config.js</code> with your project credentials. The app runs smoothly in offline/demo mode out of the box!</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-primary w-full" data-close-modal="modal-settings">Acknowledge</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Core Script (ES Module) -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
